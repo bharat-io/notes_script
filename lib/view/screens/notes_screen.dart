@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:path/path.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -13,9 +16,20 @@ class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController descriptionController = TextEditingController();
   DBHelper? dbHelper;
   List<Map<String, dynamic>> noteList = [];
+  List<Color> noteColors = [];
+
   void fetchNotes() async {
     noteList = await dbHelper!.fetchData();
+    noteColors = List.generate(noteList.length, (context) => getRandomColor());
     setState(() {});
+  }
+
+  Color getRandomColor() {
+    final Random random = Random();
+    final int red = (random.nextInt(128) + 127);
+    final int green = (random.nextInt(128) + 127);
+    final int blue = (random.nextInt(128) + 127);
+    return Color.fromARGB(255, red, green, blue);
   }
 
   @override
@@ -87,7 +101,7 @@ class _NotesScreenState extends State<NotesScreen> {
                           height: 110,
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: noteColors[index],
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
