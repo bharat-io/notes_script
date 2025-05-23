@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:notes_script/view/screens/note_description_screen.dart';
 import 'package:path/path.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -17,19 +18,19 @@ class _NotesScreenState extends State<NotesScreen> {
   DBHelper? dbHelper;
   List<Map<String, dynamic>> noteList = [];
   List<Color> noteColors = [];
-
-  void fetchNotes() async {
-    noteList = await dbHelper!.fetchData();
-    noteColors = List.generate(noteList.length, (context) => getRandomColor());
-    setState(() {});
-  }
-
   Color getRandomColor() {
     final Random random = Random();
     final int red = (random.nextInt(128) + 127);
     final int green = (random.nextInt(128) + 127);
     final int blue = (random.nextInt(128) + 127);
     return Color.fromARGB(255, red, green, blue);
+  }
+
+  void fetchNotes() async {
+    noteList = await dbHelper!.fetchData();
+    noteColors = List.generate(noteList.length, (_) => getRandomColor());
+
+    setState(() {});
   }
 
   @override
@@ -96,25 +97,33 @@ class _NotesScreenState extends State<NotesScreen> {
                     child: Stack(
                       alignment: AlignmentDirectional.bottomEnd,
                       children: [
-                        Container(
-                          width: double.infinity,
-                          height: 110,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: noteColors[index],
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(2, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            notes[DBHelper.NOTE_TITLE],
-                            style: TextStyle(fontSize: 20),
-                            maxLines: 2,
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => NoteDescriptionScreen(
+                                      noteData: notes,
+                                    )));
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 110,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: noteColors[index],
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(2, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              notes[DBHelper.NOTE_TITLE],
+                              style: TextStyle(fontSize: 20),
+                              maxLines: 2,
+                            ),
                           ),
                         ),
                         Padding(
