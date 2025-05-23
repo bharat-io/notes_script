@@ -16,6 +16,7 @@ class DBHelper {
   static const NOTE_ID = "id";
   static const NOTE_TITLE = "title";
   static const NOTE_DESCRIPTION = "description";
+  static const NOTE_CREATED_AT = "created_at";
 
   Future<Database> initDB() async {
     if (database == null) {
@@ -34,6 +35,7 @@ class DBHelper {
       return db.execute('''
       CREATE TABLE $NOTE_TABLE(
       $NOTE_ID INTEGER PRIMARY  KEY AUTOINCREMENT,
+      $NOTE_CREATED_AT Text NOT NULL,
       $NOTE_TITLE TEXT NOT NULL,
       $NOTE_DESCRIPTION TEXT NOT NULL
       )
@@ -46,12 +48,32 @@ class DBHelper {
     var db = await initDB();
     await db.insert(
       NOTE_TABLE,
-      {NOTE_TITLE: title, NOTE_DESCRIPTION: description},
+      {
+        NOTE_TITLE: title,
+        NOTE_DESCRIPTION: description,
+        NOTE_CREATED_AT: DateTime.now().toString()
+      },
     );
   }
 
   Future<List<Map<String, dynamic>>> fetchData() async {
     var db = await initDB();
     return db.query(NOTE_TABLE);
+  }
+
+  Future<int> deleteNote(int id) async {
+    var db = await initDB();
+    return db.delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [id]);
+  }
+
+  Future<int> updateNote(
+      {required int id,
+      required String title,
+      required String description}) async {
+    var db = await initDB();
+    var result = db.update(
+        NOTE_TABLE, {NOTE_TITLE: title, NOTE_DESCRIPTION: description},
+        where: "$NOTE_ID=?", whereArgs: [id]);
+    return result;
   }
 }
