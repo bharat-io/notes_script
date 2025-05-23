@@ -54,4 +54,9 @@ class DBHelper {
     var db = await initDB();
     return db.query(NOTE_TABLE);
   }
+
+  Future<int> deleteNote(int id) async {
+    var db = await initDB();
+    return db.delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [id]);
+  }
 }
