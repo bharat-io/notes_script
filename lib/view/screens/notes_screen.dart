@@ -1,7 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:notes_script/bottom_sheet.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:notes_script/show_snackbar.dart';
 import 'package:notes_script/view/screens/note_description_screen.dart';
 import 'package:path/path.dart';
 
@@ -18,6 +21,7 @@ class _NotesScreenState extends State<NotesScreen> {
   DBHelper? dbHelper;
   List<Map<String, dynamic>> noteList = [];
   List<Color> noteColors = [];
+  var date = DateFormat.yMMMEd();
   Color getRandomColor() {
     final Random random = Random();
     final int red = (random.nextInt(128) + 127);
@@ -71,10 +75,17 @@ class _NotesScreenState extends State<NotesScreen> {
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              builder: (context) => buildBottomSheet(context, () {
+              builder: (context) => buildBottomSheet(context,
+                  titleText: 'Add ',
+                  buttonText: "Add",
+                  titleController: titleController,
+                  descriptionController: descriptionController, onTap: () {
                 dbHelper!.addNote(
                     title: titleController.text,
                     description: descriptionController.text);
+
+                titleController.clear();
+                descriptionController.clear();
                 Navigator.of(context).pop();
                 fetchNotes();
               }),
@@ -102,6 +113,9 @@ class _NotesScreenState extends State<NotesScreen> {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => NoteDescriptionScreen(
                                       noteData: notes,
+                                      titleController: titleController,
+                                      descriptionController:
+                                          descriptionController,
                                     )));
                           },
                           child: Container(
@@ -119,10 +133,23 @@ class _NotesScreenState extends State<NotesScreen> {
                                 ),
                               ],
                             ),
-                            child: Text(
-                              notes[DBHelper.NOTE_TITLE],
-                              style: TextStyle(fontSize: 20),
-                              maxLines: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  notes[DBHelper.NOTE_TITLE],
+                                  style: TextStyle(fontSize: 20),
+                                  maxLines: 2,
+                                ),
+                                Text(
+                                  date
+                                      .format(DateTime.parse(
+                                          notes[DBHelper.NOTE_CREATED_AT]))
+                                      .toString(),
+                                  style: TextStyle(fontSize: 10),
+                                )
+                              ],
                             ),
                           ),
                         ),
@@ -149,6 +176,8 @@ class _NotesScreenState extends State<NotesScreen> {
                                             notes[DBHelper.NOTE_ID]);
                                         fetchNotes();
                                         Navigator.of(context).pop();
+                                        showSnackBar(
+                                            "Note deleted successful", context);
                                       },
                                       child: const Text("delete"),
                                     ),
@@ -173,77 +202,5 @@ class _NotesScreenState extends State<NotesScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
               ));
-  }
-
-  Widget buildBottomSheet(BuildContext context, Function onTap) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Add a Note',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(),
-                      side: BorderSide(color: Colors.grey),
-                    ),
-                    child: const Text("Cancel"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      onTap();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(),
-                    ),
-                    child: const Text("Save"),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
