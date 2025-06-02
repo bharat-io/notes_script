@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_script/bottom_sheet.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:notes_script/provider/note_provider.dart';
+import 'package:notes_script/view/screens/notes_screen.dart';
 import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 
 class NoteDescriptionScreen extends StatefulWidget {
   const NoteDescriptionScreen(
@@ -20,11 +23,15 @@ class NoteDescriptionScreen extends StatefulWidget {
 
 class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
   DBHelper? dbHelper;
-  var date = DateFormat.yMMMEd();
+  var date = DateFormat('dd-MMMM-yyyy');
 
   @override
   void initState() {
     super.initState();
+  }
+
+  void replaceAfterUdate(context) {
+    Navigator.of(context).pop();
   }
 
   @override
@@ -39,7 +46,7 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
               color: Colors.white24, borderRadius: BorderRadius.circular(12)),
           child: IconButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                replaceAfterUdate(context);
               },
               icon: Icon(
                 Icons.arrow_back_ios,
@@ -66,20 +73,13 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
                         context: context,
                         builder: (context) => buildBottomSheet(context,
                                 buttonText: "Update",
-                                titleText: 'Edit', onTap: () async {
-                              await DBHelper.getInstance().updateNote(
-                                  id: widget.noteData[DBHelper.NOTE_ID],
-                                  title: widget.titleController.text,
-                                  description:
+                                titleText: 'Edit', onTap: () {
+                              context.read<NoteProvider>().updateNotes(
+                                  noteId: widget.noteData[DBHelper.NOTE_ID],
+                                  noteTitle: widget.titleController.text,
+                                  noteDescription:
                                       widget.descriptionController.text);
-
-                              setState(() {
-                                widget.noteData[DBHelper.NOTE_TITLE] =
-                                    widget.titleController.text;
-                                widget.noteData[DBHelper.NOTE_DESCRIPTION] =
-                                    widget.descriptionController.text;
-                              });
-
+                              Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },
                                 titleController: widget.titleController,
@@ -97,17 +97,31 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
       body: Padding(
         padding: EdgeInsets.only(top: 50, right: 12, left: 12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.noteData[DBHelper.NOTE_TITLE],
               style: TextStyle(fontSize: 30, color: Colors.white),
             ),
+            Text(
+              date.format(
+                  DateTime.parse(widget.noteData[DBHelper.NOTE_CREATED_AT])),
+              style: TextStyle(color: Colors.white60),
+            ),
             SizedBox(
               height: 15,
             ),
-            Text(
-              widget.noteData[DBHelper.NOTE_DESCRIPTION],
-              style: TextStyle(fontSize: 15, color: Colors.white),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Text(
+                      widget.noteData[DBHelper.NOTE_DESCRIPTION],
+                      style: TextStyle(fontSize: 15, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
             )
           ],
         ),
