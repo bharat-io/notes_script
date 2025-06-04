@@ -79,9 +79,14 @@ class _NotesScreenState extends State<NotesScreen> {
                     buttonText: "Add",
                     titleController: titleController,
                     descriptionController: descriptionController, onTap: () {
-                  context.read<NoteProvider>().addNotes(
-                      noteTitle: titleController.text,
-                      noteDescription: descriptionController.text);
+                  if (titleController.text.isNotEmpty) {
+                    context.read<NoteProvider>().addNotes(
+                        noteTitle: titleController.text,
+                        noteDescription: descriptionController.text);
+                    showSnackBar("Note added successfuly!", context);
+                  } else {
+                    showSnackBar("enter valid title!", context);
+                  }
 
                   titleController.clear();
                   descriptionController.clear();

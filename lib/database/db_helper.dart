@@ -44,9 +44,10 @@ class DBHelper {
     });
   }
 
-  void addNote({required String title, required String description}) async {
+  Future<bool> addData(
+      {required String title, required String description}) async {
     var db = await initDB();
-    await db.insert(
+    int rowsEffected = await db.insert(
       NOTE_TABLE,
       {
         NOTE_TITLE: title,
@@ -54,6 +55,7 @@ class DBHelper {
         NOTE_CREATED_AT: DateTime.now().toString()
       },
     );
+    return rowsEffected > 0;
   }
 
   Future<List<Map<String, dynamic>>> fetchData() async {
@@ -61,19 +63,21 @@ class DBHelper {
     return db.query(NOTE_TABLE);
   }
 
-  Future<int> deleteNote(int id) async {
+  Future<bool> deleteData(int id) async {
     var db = await initDB();
-    return db.delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [id]);
+    int rowsEffected =
+        await db.delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [id]);
+    return rowsEffected > 0;
   }
 
-  Future<int> updateNote(
+  Future<bool> updateData(
       {required int id,
       required String title,
       required String description}) async {
     var db = await initDB();
-    var result = db.update(
+    int rowsEffected = await db.update(
         NOTE_TABLE, {NOTE_TITLE: title, NOTE_DESCRIPTION: description},
         where: "$NOTE_ID=?", whereArgs: [id]);
-    return result;
+    return rowsEffected > 0;
   }
 }

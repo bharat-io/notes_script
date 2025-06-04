@@ -12,23 +12,30 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addNotes({required String noteTitle, required String noteDescription}) {
-    dbHelper.addNote(title: noteTitle, description: noteDescription);
-    fetchNotes();
+  void addNotes(
+      {required String noteTitle, required String noteDescription}) async {
+    bool check =
+        await dbHelper.addData(title: noteTitle, description: noteDescription);
+    if (check) {
+      fetchNotes();
+    }
   }
 
   void updateNotes(
       {required int noteId,
       required String noteTitle,
-      required String noteDescription}) {
-    dbHelper.updateNote(
+      required String noteDescription}) async {
+    bool check = await dbHelper.updateData(
         id: noteId, title: noteTitle, description: noteDescription);
-    notifyListeners();
-    fetchNotes();
+    if (check) {
+      fetchNotes();
+    }
   }
 
-  void deleteNotes({required int noteId}) {
-    dbHelper.deleteNote(noteId);
-    fetchNotes();
+  void deleteNotes({required int noteId}) async {
+    bool check = await dbHelper.deleteData(noteId);
+    if (check) {
+      fetchNotes();
+    }
   }
 }
