@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:notes_script/database/model/note_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -44,40 +45,36 @@ class DBHelper {
     });
   }
 
-  Future<bool> addData(
-      {required String title, required String description}) async {
+  Future<bool> addData({required NoteModel noteModel}) async {
     var db = await initDB();
-    int rowsEffected = await db.insert(
-      NOTE_TABLE,
-      {
-        NOTE_TITLE: title,
-        NOTE_DESCRIPTION: description,
-        NOTE_CREATED_AT: DateTime.now().toString()
-      },
-    );
+    int rowsEffected = await db.insert(NOTE_TABLE, noteModel.toMap());
     return rowsEffected > 0;
   }
 
-  Future<List<Map<String, dynamic>>> fetchData() async {
+  Future<List<NoteModel>> fetchData() async {
     var db = await initDB();
-    return db.query(NOTE_TABLE);
+    List<Map<String, dynamic>> noteMapData = await db.query(NOTE_TABLE);
+    List<NoteModel> noteList = [];
+
+    for (int i = 0; i < noteMapData.length; i++) {
+      NoteModel eachnoteModel = NoteModel.fromMap(noteMapData[i]);
+      noteList.add(eachnoteModel);
+    }
+    return noteList;
   }
 
-  Future<bool> deleteData(int id) async {
+  Future<bool> deleteData({required NoteModel noteModel}) async {
     var db = await initDB();
-    int rowsEffected =
-        await db.delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [id]);
+    int rowsEffected = await db
+        .delete(NOTE_TABLE, where: "$NOTE_ID=?", whereArgs: [noteModel.id]);
     return rowsEffected > 0;
   }
 
-  Future<bool> updateData(
-      {required int id,
-      required String title,
-      required String description}) async {
+  Future<bool> updateData({required NoteModel noteModel}) async {
     var db = await initDB();
-    int rowsEffected = await db.update(
-        NOTE_TABLE, {NOTE_TITLE: title, NOTE_DESCRIPTION: description},
-        where: "$NOTE_ID=?", whereArgs: [id]);
+    int rowsEffected = await db.update(NOTE_TABLE,
+        {NOTE_TITLE: noteModel.title, NOTE_DESCRIPTION: noteModel.description},
+        where: "$NOTE_ID=?", whereArgs: [noteModel.id]);
     return rowsEffected > 0;
   }
 }

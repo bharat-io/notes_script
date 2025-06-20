@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_script/bottom_sheet.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:notes_script/database/model/note_model.dart';
 import 'package:notes_script/provider/note_provider.dart';
-import 'package:notes_script/view/screens/notes_screen.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 class NoteDescriptionScreen extends StatefulWidget {
@@ -13,7 +12,7 @@ class NoteDescriptionScreen extends StatefulWidget {
       required this.noteData,
       required this.titleController,
       required this.descriptionController});
-  final Map<String, dynamic> noteData;
+  final NoteModel noteData;
   final TextEditingController titleController;
   final TextEditingController descriptionController;
 
@@ -62,10 +61,9 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
                   borderRadius: BorderRadius.circular(12)),
               child: IconButton(
                   onPressed: () {
-                    widget.titleController.text =
-                        widget.noteData[DBHelper.NOTE_TITLE] ?? '';
+                    widget.titleController.text = widget.noteData.title ?? '';
                     widget.descriptionController.text =
-                        widget.noteData[DBHelper.NOTE_DESCRIPTION] ?? '';
+                        widget.noteData.description ?? '';
 
                     showModalBottomSheet(
                         isScrollControlled: true,
@@ -75,7 +73,7 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
                                 buttonText: "Update",
                                 titleText: 'Edit', onTap: () {
                               context.read<NoteProvider>().updateNotes(
-                                  noteId: widget.noteData[DBHelper.NOTE_ID],
+                                  noteId: widget.noteData.id!,
                                   noteTitle: widget.titleController.text,
                                   noteDescription:
                                       widget.descriptionController.text);
@@ -100,12 +98,11 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.noteData[DBHelper.NOTE_TITLE],
+              widget.noteData.title!,
               style: TextStyle(fontSize: 30, color: Colors.white),
             ),
             Text(
-              date.format(
-                  DateTime.parse(widget.noteData[DBHelper.NOTE_CREATED_AT])),
+              date.format(DateTime.parse(widget.noteData.createdAt!)),
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(
@@ -116,7 +113,7 @@ class _NoteDescriptionScreenState extends State<NoteDescriptionScreen> {
                 child: Column(
                   children: [
                     Text(
-                      widget.noteData[DBHelper.NOTE_DESCRIPTION],
+                      widget.noteData.description!,
                       style: TextStyle(fontSize: 15, color: Colors.white),
                     ),
                   ],
