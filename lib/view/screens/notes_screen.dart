@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes_script/bottom_sheet.dart';
 import 'package:notes_script/database/db_helper.dart';
+import 'package:notes_script/database/model/note_model.dart';
 import 'package:notes_script/provider/note_provider.dart';
 import 'package:notes_script/show_snackbar.dart';
 import 'package:notes_script/view/screens/note_description_screen.dart';
@@ -20,7 +21,7 @@ class _NotesScreenState extends State<NotesScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   DBHelper? dbHelper;
-  List<Map<String, dynamic>> noteList = [];
+  List<NoteModel> noteList = [];
   List<Color> noteColors = [];
   var date = DateFormat('dd-MMMM-yyyy');
   Color getRandomColor() {
@@ -30,10 +31,6 @@ class _NotesScreenState extends State<NotesScreen> {
     final int blue = (random.nextInt(128) + 127);
     return Color.fromARGB(255, red, green, blue);
   }
-
-  // void fetchNotes() async {
-  //   noteList = await dbHelper!.fetchData();
-  // }
 
   @override
   void initState() {
@@ -82,7 +79,8 @@ class _NotesScreenState extends State<NotesScreen> {
                   if (titleController.text.isNotEmpty) {
                     context.read<NoteProvider>().addNotes(
                         noteTitle: titleController.text,
-                        noteDescription: descriptionController.text);
+                        noteDescription: descriptionController.text,
+                        createdAt: DateTime.now().toString());
                     showSnackBar("Note added successfuly!", context);
                   } else {
                     showSnackBar("enter valid title!", context);
@@ -100,7 +98,7 @@ class _NotesScreenState extends State<NotesScreen> {
         body: Consumer(builder: (ctx, provider, __) {
           noteList = ctx.watch<NoteProvider>().getNotesList();
           noteColors = List.generate(noteList.length, (_) => getRandomColor());
-          print("Data on UI: $noteList");
+
           return noteList.isNotEmpty
               ? GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -147,14 +145,14 @@ class _NotesScreenState extends State<NotesScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    notes[DBHelper.NOTE_TITLE],
+                                    notes.title!,
                                     style: TextStyle(fontSize: 20),
                                     maxLines: 2,
                                   ),
                                   Text(
                                     date
-                                        .format(DateTime.parse(
-                                            notes[DBHelper.NOTE_CREATED_AT]))
+                                        .format(
+                                            DateTime.parse(notes.createdAt!))
                                         .toString(),
                                     style: TextStyle(fontSize: 15),
                                   )
@@ -183,9 +181,7 @@ class _NotesScreenState extends State<NotesScreen> {
                                         onPressed: () {
                                           context
                                               .read<NoteProvider>()
-                                              .deleteNotes(
-                                                  noteId:
-                                                      notes[DBHelper.NOTE_ID]);
+                                              .deleteNotes(noteId: notes.id!);
                                           Navigator.of(context).pop();
                                           showSnackBar(
                                               "Note deleted successful",
